@@ -268,27 +268,27 @@ The curves show that both models can learn under some settings, while the baseli
 # 9. Representative Curves / 代表性曲线
 ### ViT_Baseline (10% data, e10)
 
-![ViT Dice](assets/Task01_BrainTumour_ViT_Baseline_e10_dice_curve.png)
-![ViT Loss](assets/Task01_BrainTumour_ViT_Baseline_e10_loss_curve.png)
-![ViT NSD](assets/Task01_BrainTumour_ViT_Baseline_e10_nsd_curve.png)
+![ViT Dice](assets/Task01_BrainTumour_ViT_Baseline_e10/Task01_BrainTumour_ViT_Baseline_e10_dice_curve.png)
+![ViT Loss](assets/Task01_BrainTumour_ViT_Baseline_e10/Task01_BrainTumour_ViT_Baseline_e10_loss_curve.png)
+![ViT NSD](assets/Task01_BrainTumour_ViT_Baseline_e10/Task01_BrainTumour_ViT_Baseline_e10_nsd_curve.png)
 
 ### MedVisionLlama (10% data, e10)
 
-![MedVisionLlama Dice](assets/Task01_BrainTumour_MedVisionLlama_e10_dice_curve.png)
-![MedVisionLlama Loss](assets/Task01_BrainTumour_MedVisionLlama_e10_loss_curve.png)
-![MedVisionLlama NSD](assets/Task01_BrainTumour_MedVisionLlama_e10_nsd_curve.png)
+![MedVisionLlama Dice](assets/Task01_BrainTumour_MedVisionLlama_e10/Task01_BrainTumour_MedVisionLlama_e10_dice_curve.png)
+![MedVisionLlama Loss](assets/Task01_BrainTumour_MedVisionLlama_e10/Task01_BrainTumour_MedVisionLlama_e10_loss_curve.png)
+![MedVisionLlama NSD](assets/Task01_BrainTumour_MedVisionLlama_e10/Task01_BrainTumour_MedVisionLlama_e10_nsd_curve.png)
 
 ### ViT_Baseline (30% data)
 
-![ViT 30pct Dice](assets/Task01_BrainTumour_ViT_Baseline_30pct_dice_curve.png)
-![ViT 30pct Loss](assets/Task01_BrainTumour_ViT_Baseline_30pct_loss_curve.png)
-![ViT 30pct NSD](assets/Task01_BrainTumour_ViT_Baseline_30pct_nsd_curve.png)
+![ViT 30pct Dice](assets/Task01_BrainTumour_ViT_Baseline_30pct/Task01_BrainTumour_ViT_Baseline_30pct_dice_curve.png)
+![ViT 30pct Loss](assets/Task01_BrainTumour_ViT_Baseline_30pct/Task01_BrainTumour_ViT_Baseline_30pct_loss_curve.png)
+![ViT 30pct NSD](assets/Task01_BrainTumour_ViT_Baseline_30pct/Task01_BrainTumour_ViT_Baseline_30pct_nsd_curve.png)
 
 ### MedVisionLlama (30% data)
 
-![MedVisionLlama 30pct Dice](assets/Task01_BrainTumour_MedVisionLlama_30pct_dice_curve.png)
-![MedVisionLlama 30pct Loss](assets/Task01_BrainTumour_MedVisionLlama_30pct_loss_curve.png)
-![MedVisionLlama 30pct NSD](assets/Task01_BrainTumour_MedVisionLlama_30pct_nsd_curve.png)
+![MedVisionLlama 30pct Dice](assets/Task01_BrainTumour_MedVisionLlama_30pct/Task01_BrainTumour_MedVisionLlama_30pct_dice_curve.png)
+![MedVisionLlama 30pct Loss](assets/Task01_BrainTumour_MedVisionLlama_30pct/Task01_BrainTumour_MedVisionLlama_30pct_loss_curve.png)
+![MedVisionLlama 30pct NSD](assets/Task01_BrainTumour_MedVisionLlama_30pct/Task01_BrainTumour_MedVisionLlama_30pct_nsd_curve.png)
 
 # 10. Completed Experiments / 已完成实验
 - Task01_BrainTumour_ViT_Baseline
