@@ -1,93 +1,123 @@
+import os
 import torch
 import torch.nn as nn
 from src.models.layers import ImageToPatches3D, PatchEmbedding3D, SelfAttentionEncoderBlock, OutputProjection
 
-class ViT_Baseline(nn.Module):
-    """
-    Baseline Vision Transformer (ViT) for 3D image segmentation.
-    
-    This is a standard Vision Transformer architecture adapted for 3D medical image segmentation.
-    It processes 3D images by dividing them into patches, embedding them, and applying self-attention
-    blocks followed by an output projection.
+DEBUG_SHAPES = os.environ.get("MEDV_DEBUG_SHAPES", "1") == "1"
 
-    Args:
-        image_size (tuple): Size of the input image in the format (height, width, depth).
-        patch_size (tuple): Size of each patch in the format (height, width, depth).
-        in_channels (int): Number of input channels.
-        out_channels (int): Number of output channels.
-        embed_size (int): Size of the embedding dimension.
-        num_blocks (int): Number of self-attention blocks.
-        num_heads (int): Number of attention heads.
-        dropout (float): Dropout probability.
-    """
+def dbg(msg, x=None):
+    if not DEBUG_SHAPES:
+        return
+    if x is None:
+        print(f"[MEDV-DEBUG] {msg}", flush=True)
+        return
+    if isinstance(x, torch.Tensor):
+        print(
+            f"[MEDV-DEBUG] {msg}: shape={tuple(x.shape)}, dtype={x.dtype}, device={x.device}",
+            flush=True
+        )
+    else:
+        print(f"[MEDV-DEBUG] {msg}: {x}", flush=True)
+
+class ViT_Baseline(nn.Module):
     def __init__(self, image_size, patch_size, in_channels, out_channels, embed_size, num_blocks, num_heads, dropout):
         super().__init__()
-        self.image_size = image_size
-        self.patch_size = patch_size
+        self.image_size = tuple(image_size)
+        self.patch_size = tuple(patch_size)
         self.embed_size = embed_size
         self.num_blocks = num_blocks
         self.num_heads = num_heads
         self.dropout = dropout
 
-        # Image to patches and embedding layers
-        self.i2p3d = ImageToPatches3D(image_size, patch_size)  # Convert 3D image to patches
-        self.pe = PatchEmbedding3D(patch_size[0] * patch_size[1] * patch_size[2] * in_channels, embed_size)  # Embed patches
-        num_patches = (image_size[0] // patch_size[0]) * (image_size[1] // patch_size[1]) * (image_size[2] // patch_size[2])
-        self.position_embed = nn.Parameter(torch.randn(1, num_patches, embed_size))  # Positional embeddings
+        self.i2p3d = ImageToPatches3D(image_size, patch_size)
+        self.pe = PatchEmbedding3D(patch_size[0] * patch_size[1] * patch_size[2] * in_channels, embed_size)
 
-        # Self-attention blocks for the transformer encoder
+        self.num_patches = (
+            (image_size[0] // patch_size[0]) *
+            (image_size[1] // patch_size[1]) *
+            (image_size[2] // patch_size[2])
+        )
+        self.position_embed = nn.Parameter(torch.randn(1, self.num_patches, embed_size))
+
         self.attention_blocks = nn.ModuleList(
             [SelfAttentionEncoderBlock(embed_size, num_heads, dropout) for _ in range(num_blocks)]
         )
 
-        # Output projection layer to map embeddings back to the image space
         self.output_proj = OutputProjection(image_size, patch_size, embed_size, out_channels)
-
-        # Sigmoid activation for binary segmentation
         self.sigmoid = nn.Sigmoid()
-
-        # Additional output projection for visualization (after positional embedding)
         self.vis_output_proj = OutputProjection(image_size, patch_size, embed_size, out_channels)
 
+        dbg("========== ViT_Baseline init ==========")
+        dbg("self.image_size", self.image_size)
+        dbg("self.patch_size", self.patch_size)
+        dbg("self.num_patches", self.num_patches)
+        dbg("position_embed.shape", tuple(self.position_embed.shape))
+        dbg("======================================")
+
     def forward(self, x, visualize=False):
-        """
-        Forward pass for the baseline ViT.
-        
-        Args:
-            x (torch.Tensor): Input tensor of shape (batch_size, channels, height, width, depth).
-            visualize (bool): Whether to store activations for visualization.
-        
-        Returns:
-            torch.Tensor: Output tensor of shape (batch_size, out_channels, height, width, depth).
-            list: List of activations for visualization.
-        """
-        activations = []  # To store activations for visualization
+        activations = []
 
-        # Step 1: Image to patches
-        activations.append(x.clone().detach())  # Store input activation
+        dbg("========== ViT_Baseline.forward ==========")
+        dbg("forward.input_x", x)
+
+        assert x.dim() == 5, f"Expected [B,C,H,W,D], got {tuple(x.shape)}"
+
+        runtime_hwd = (x.shape[2], x.shape[3], x.shape[4])
+        dbg("forward.runtime_input_hwd", runtime_hwd)
+
+        expected_tokens = (
+            (x.shape[2] // self.patch_size[0]) *
+            (x.shape[3] // self.patch_size[1]) *
+            (x.shape[4] // self.patch_size[2])
+        )
+        dbg("forward.expected_tokens_from_runtime_input", expected_tokens)
+
+        activations.append(x.clone().detach())
+
+        dbg("before i2p3d", x)
         x = self.i2p3d(x)
+        dbg("after i2p3d", x)
 
-        # Step 2: Apply patch embedding
+        assert x.dim() == 3, f"after i2p3d expected [B,T,C], got {tuple(x.shape)}"
+        assert x.shape[1] == expected_tokens, (
+            f"Token mismatch after i2p3d: got {x.shape[1]}, expected {expected_tokens}"
+        )
+
+        dbg("before patch embedding", x)
         x = self.pe(x)
+        dbg("after patch embedding", x)
 
         if visualize:
-            # Store activation after patch embedding
+            dbg("before vis_output_proj", x)
             vis_output = self.vis_output_proj(x)
             vis_output = self.sigmoid(vis_output)
             activations.append(vis_output.clone().detach())
 
-        # Step 3: Add positional embeddings
+        dbg("before add position_embed", x)
+        dbg("position_embed", self.position_embed)
+
+        assert x.shape[1] == self.position_embed.shape[1], (
+            f"Position embedding mismatch: x.shape={tuple(x.shape)}, "
+            f"position_embed.shape={tuple(self.position_embed.shape)}"
+        )
+
         x = x + self.position_embed
+        dbg("after add position_embed", x)
 
-        # Step 4: Apply self-attention blocks
-        for head in self.attention_blocks:
+        for idx, head in enumerate(self.attention_blocks):
+            dbg(f"before attention_block_{idx}", x)
             x = head(x)
+            dbg(f"after attention_block_{idx}", x)
 
-        # Step 5: Output projection and sigmoid activation
+        dbg("before output_proj", x)
         x = self.output_proj(x)
-        activations.append(x.clone().detach())  # Store activation after output projection
+        dbg("after output_proj", x)
+
+        activations.append(x.clone().detach())
 
         x = self.sigmoid(x)
-        activations.append(x.clone().detach())  # Store final activation
+        dbg("after sigmoid", x)
+        activations.append(x.clone().detach())
 
+        dbg("========== ViT_Baseline.forward end ==========")
         return x, activations

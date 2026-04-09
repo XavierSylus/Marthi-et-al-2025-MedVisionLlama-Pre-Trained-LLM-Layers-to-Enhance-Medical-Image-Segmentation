@@ -52,14 +52,14 @@ class MedVisionLlama_Frozen(nn.Module):
         self.llm = LlamaTransformer(llm_default_config)
 
         # Load Llama checkpoint
-        llm_path = "/path/to/your/project/LLaMA_v3.1/llama-3.1-8b"
+        llm_path = "/root/autodl-tmp/llama-3.1-8b/original"
         logger.info("Loading Llama checkpoints")
         start_time = time.time()
         checkpoints = sorted(Path(llm_path).glob("*.pth"))
         ckpt_path = checkpoints[0]
         checkpoint = torch.load(ckpt_path, map_location="cpu")
         self.llm.custom_load_state_dict(checkpoint, tail=True, strict=False)
-        logger.info(f"Loaded in {time.time() - start_time:.2f} seconds"
+        logger.info(f"Loaded in {time.time() - start_time:.2f} seconds")
 
         # Freeze Llama parameters
         for param in self.llm.parameters():

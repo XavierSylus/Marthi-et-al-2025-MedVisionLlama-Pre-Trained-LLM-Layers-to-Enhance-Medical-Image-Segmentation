@@ -4,20 +4,37 @@ import SimpleITK as sitk
 from torch.utils.data import Dataset, Subset, ConcatDataset
 from scipy.ndimage import zoom, rotate
 
+import json
+
+# def get_img_label_paths(data_file):
+#     """
+#     Reads a CSV file containing image and label paths and returns a list of tuples.
+    
+#     Args:
+#         data_file (str): Path to the CSV file where each line contains the image and label paths separated by a comma.
+        
+#     Returns:
+#         list: A list of tuples, where each tuple contains the image and label paths.
+#     """
+#     img_label_plist = []
+#     with open(data_file, 'r') as f:
+#         for l in f:
+#             img_label_plist.append(l.strip().split(','))
+#     return img_label_plist
+
 def get_img_label_paths(data_file):
     """
-    Reads a CSV file containing image and label paths and returns a list of tuples.
-    
-    Args:
-        data_file (str): Path to the CSV file where each line contains the image and label paths separated by a comma.
-        
-    Returns:
-        list: A list of tuples, where each tuple contains the image and label paths.
+    Reads an MSD JSON file containing image and label paths and returns a list of lists.
     """
     img_label_plist = []
-    with open(data_file, 'r') as f:
-        for l in f:
-            img_label_plist.append(l.strip().split(','))
+    with open(data_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        
+    # 官方 dataset.json 的训练集数据全部挂载在 'training' 这个 Key 下面
+    for item in data.get('training', []):
+        # 提取字典里的 "image" 和 "label" 相对路径，组合成列表返回
+        img_label_plist.append([item['image'], item['label']])
+        
     return img_label_plist
 
 def get_img(img_path):

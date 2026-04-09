@@ -1,0 +1,24 @@
+# 绝对防御：拦截所有数据集和结果目录
+Task01*
+Task*
+
+# 绝对防御：拦截所有模型权重
+*lama*
+*Llama*
+*.pth
+*.bin
+
+# 绝对防御：拦截所有大型日志与图片
+*.nii.gz
+*.csv
+*.png
+*.jpg
+
+# 拦截 Python 缓存
+__pycache__/
+*.pyc
+
+# 拦截虚拟环境与临时文件
+medvision_env/
+.ipynb_checkpoints/
+*.log
